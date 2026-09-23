@@ -145,10 +145,48 @@ docs/                  # screenshots for the README
 tests/                 # pytest suite
 ```
 
+## Works on / known issues
+
+### Verified
+- **Windows 10/11** — primary development target; full app run with webcam + HUD
+- **Linux (headless CI)** — lint + 55 tests on Python **3.10, 3.11, 3.12**
+- Unit tests cover config validation, action resolution, gestures, calibration, macros
+
+### Expected to work (not fully field-tested)
+- **macOS** — code paths exist (`super`, `osascript`, etc.); grant **Camera** and **Accessibility** permissions
+- **Linux desktop** — needs a working webcam + X11/Wayland session for OpenCV/PyAutoGUI
+
+### Recommended environment
+| | |
+|--|--|
+| Python | **3.10–3.12** (3.11 is a safe default) |
+| Webcam | 640×480 @ 30fps is enough |
+| Network | Required on **first run** to download `hand_landmarker.task` |
+| OS | Windows, macOS, or Linux with a desktop session |
+
+### Known issues / first-run tips
+1. **MediaPipe install** — the most common setup failure; use a fresh venv and the Python version above.
+2. **Camera not opening** — check OS camera privacy settings; try `--camera 1`, `--camera 2`, or `--demo` to verify the UI.
+3. **Gestures feel flaky** — improve lighting, sit 1–2 ft away, run calibration (`c`). Hand size and background matter.
+4. **PyAutoGUI fail-safe** — if the cursor is driven into a screen corner, the action retries once and a HUD notice appears; move the cursor away from corners.
+5. **System actions** — volume/lock/window hotkeys can differ by DE (Linux) or require permissions (macOS).
+6. **`pystray` tray icon** — optional; the app still runs if the tray fails to start.
+7. **Multi-monitor** — supported via `screeninfo`; behavior with exotic layouts is less tested.
+
+### Compatibility matrix (honest)
+
+| Platform | Runs | Gestures reliable | Notes |
+|----------|------|-------------------|--------|
+| Windows 10/11 | ✅ tested | ✅ tested | Best supported |
+| Linux + webcam | ⚠️ expected | ⚠️ untested live | CI only (headless) |
+| macOS | ⚠️ expected | ⚠️ untested | Grant camera + accessibility |
+| No webcam | ✅ `--demo` | n/a | HUD preview only |
+
 ## Notes
 
-- PyAutoGUI's corner fail-safe is respected; if the cursor hits a screen corner, the action is retried once with the fail-safe temporarily disabled (and logged).
+- PyAutoGUI's corner fail-safe is respected; if the cursor hits a screen corner, the action is retried once with the fail-safe temporarily disabled (logged + HUD toast).
 - Keep your hand 1–2 feet from the camera with decent lighting for best results.
+- Issues and PRs welcome — use the templates under **New issue**.
 
 ## License
 
