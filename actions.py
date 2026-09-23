@@ -61,6 +61,7 @@ class GestureActions:
         self.active_gaming_key = None
         self.gaming_hold_until = 0.0
         self.hand_range = None
+        self.ui_events = []
 
         self.monitors = self._get_monitors()
         self.current_monitor = 0
@@ -200,6 +201,11 @@ class GestureActions:
                     pyautogui.FAILSAFE = False
                     try:
                         handler()
+                        self.ui_events.append({
+                            "type": "failsafe",
+                            "action": action,
+                            "time": timestamp,
+                        })
                     except Exception as retry_err:
                         logger.error("Action %s failed after fail-safe override: %s", action, retry_err)
                     finally:
@@ -214,6 +220,11 @@ class GestureActions:
             })
             if len(self.action_history) > 200:
                 self.action_history.pop(0)
+
+    def drain_ui_events(self):
+        events = self.ui_events
+        self.ui_events = []
+        return events
 
     def _speak(self, text):
         if self.tts_enabled:

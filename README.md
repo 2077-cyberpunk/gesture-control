@@ -1,5 +1,8 @@
 # Gesture Controller
 
+[![CI](https://github.com/2077-cyberpunk/gesture-control/actions/workflows/ci.yml/badge.svg)](https://github.com/2077-cyberpunk/gesture-control/actions/workflows/ci.yml)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
+
 Tony Stark–style hand gesture control for your computer. Webcam in, mouse/keyboard out — no controller needed.
 
 Built with **MediaPipe**, **OpenCV**, and **PyAutoGUI**.
@@ -35,6 +38,21 @@ The hand landmark model (`hand_landmarker.task`) is downloaded automatically on 
 
 ```bash
 python gesture_controller.py
+```
+
+| Flag | Description |
+|------|-------------|
+| `--camera N` | Camera device id (overrides `config.json`) |
+| `--mode MODE` | Start in `normal`, `presentation`, or `gaming` |
+| `--demo` | Run without a camera (HUD preview only) |
+| `--config PATH` | Alternate config file |
+| `--list` | List all gestures & actions |
+| `--controls` | List keyboard shortcuts |
+| `--help` | Full help |
+
+```bash
+python gesture_controller.py --camera 1 --mode gaming
+python gesture_controller.py --demo
 ```
 
 | Key | Action |
@@ -94,6 +112,9 @@ Press `r` to reset.
 ## Configuration
 
 Edit `config.json` to remap gestures, change the camera id, or adjust mode-specific actions.
+
+- **`disabled_gestures`** — list of gesture names to ignore (e.g. `["swipe_left", "swipe_right"]` if swipes false-positive).
+- Config is validated at startup; malformed JSON or missing fields fail fast with a clear error.
 
 ## Tests
 

@@ -1,3 +1,5 @@
+import argparse
+import math
 import cv2
 import json
 import sys
@@ -5,6 +7,7 @@ import time
 import urllib.request
 import os
 import logging
+import numpy as np
 from gestures import GestureDetector
 from actions import GestureActions
 from feedback import VisualFeedback
@@ -37,14 +40,72 @@ def download_model():
     return model_path
 
 
-class GestureController:
-    def __init__(self, config_path="config.json"):
-        self.should_quit = False
-
+def load_config(config_path):
+    try:
         with open(config_path) as f:
-            self.config = json.load(f)
+            config = json.load(f)
+    except FileNotFoundError:
+        raise SystemExit(f"Config not found: {config_path}")
+    except json.JSONDecodeError as e:
+        raise SystemExit(f"Invalid JSON in {config_path}: {e}")
+    validate_config(config, config_path)
+    return config
 
-        download_model()
+
+def validate_config(config, config_path="config.json"):
+    if not isinstance(config, dict):
+        raise SystemExit(f"{config_path}: root must be a JSON object")
+
+    actions = config.get("actions")
+    if not isinstance(actions, dict) or not actions:
+        raise SystemExit(f"{config_path}: 'actions' must be a non-empty object")
+
+    for gesture, cfg in actions.items():
+        if not isinstance(cfg, dict):
+            raise SystemExit(f"{config_path}: actions.{gesture} must be an object")
+        if not cfg.get("action"):
+            raise SystemExit(f"{config_path}: actions.{gesture} needs an 'action' field")
+        if not cfg.get("description"):
+            raise SystemExit(f"{config_path}: actions.{gesture} needs a 'description' field")
+
+    mode_actions = config.get("mode_actions", {})
+    if not isinstance(mode_actions, dict):
+        raise SystemExit(f"{config_path}: 'mode_actions' must be an object")
+    for mode, mapping in mode_actions.items():
+        if not isinstance(mapping, dict):
+            raise SystemExit(f"{config_path}: mode_actions.{mode} must be an object")
+        for gesture, action in mapping.items():
+            if not isinstance(action, str) or not action:
+                raise SystemExit(
+                    f"{config_path}: mode_actions.{mode}.{gesture} must be a non-empty string"
+                )
+
+    disabled = config.get("disabled_gestures", [])
+    if not isinstance(disabled, list) or not all(isinstance(g, str) for g in disabled):
+        raise SystemExit(f"{config_path}: 'disabled_gestures' must be a list of strings")
+
+    camera_id = config.get("camera_id", 0)
+    if not isinstance(camera_id, int) or camera_id < 0:
+        raise SystemExit(f"{config_path}: 'camera_id' must be a non-negative integer")
+
+    smoothing = config.get("gesture_smoothing", 2)
+    if not isinstance(smoothing, int) or smoothing < 1:
+        raise SystemExit(f"{config_path}: 'gesture_smoothing' must be a positive integer")
+
+
+class GestureController:
+    def __init__(self, config_path="config.json", camera_id=None, mode=None, demo=False):
+        self.should_quit = False
+        self.demo_mode = demo
+
+        self.config = load_config(config_path)
+        if camera_id is not None:
+            self.config["camera_id"] = camera_id
+        if mode is not None:
+            self.config.setdefault("_cli_mode", mode)
+
+        if not self.demo_mode:
+            download_model()
 
         self.detector = GestureDetector(
             smoothing=self.config.get("gesture_smoothing", 2)
@@ -57,6 +118,7 @@ class GestureController:
 
         self.gesture_cooldown = {}
         self.cooldown_time = 0.3
+        self.disabled_gestures = set(self.config.get("disabled_gestures", []))
         self.continuous_actions = {
             "mouse_move", "scroll_up", "scroll_down", "drag_move", "presentation_pointer",
             "gaming_w", "gaming_a", "gaming_s", "gaming_d",
@@ -87,9 +149,14 @@ class GestureController:
         self.camera_retry_count = 0
         self.max_camera_retries = 5
         self.last_frame_time = time.time()
+        self._demo_frame_count = 0
 
         self.calibration.load_calibration()
         self._apply_calibration()
+
+        cli_mode = self.config.pop("_cli_mode", None)
+        if cli_mode:
+            self.set_mode(cli_mode)
 
     def _apply_calibration(self):
         if not self.calibration.calibration_complete:
@@ -99,13 +166,13 @@ class GestureController:
         self.actions.set_hand_range(data.get("hand_position_range"))
 
     def run(self):
-        cap = self._init_camera()
+        cap = None if self.demo_mode else self._init_camera()
 
         if self.tray:
             self.tray.start()
 
-        logger.info("Gesture Controller Started!")
-        print("Gesture Controller Started!")
+        logger.info("Gesture Controller Started!%s", " (demo mode)" if self.demo_mode else "")
+        print("Gesture Controller Started!" + (" [DEMO MODE]" if self.demo_mode else ""))
         print("Press 'q' to quit")
         print("Press 'h' to toggle HUD")
         print("Press 'l' to toggle action log")
@@ -120,21 +187,27 @@ class GestureController:
         print()
 
         while not self.should_quit:
-            ret, frame = cap.read()
-            if not ret:
-                logger.warning("Frame capture failed, attempting camera recovery...")
-                cap = self._recover_camera(cap)
-                if cap is None:
-                    logger.error("Camera recovery failed")
-                    break
-                continue
+            if self.demo_mode:
+                frame = self._next_demo_frame()
+            else:
+                ret, frame = cap.read()
+                if not ret:
+                    logger.warning("Frame capture failed, attempting camera recovery...")
+                    cap = self._recover_camera(cap)
+                    if cap is None:
+                        logger.error("Camera recovery failed")
+                        break
+                    continue
 
             self._update_fps()
             frame_start = time.time()
 
-            frame = cv2.flip(frame, 1)
+            if not self.demo_mode:
+                frame = cv2.flip(frame, 1)
 
-            hand_data_list = self.detector.process_frame(frame)
+            hand_data_list = [] if self.demo_mode else self.detector.process_frame(frame)
+
+            self._drain_ui_events()
 
             current_gesture = "none"
             hand_center = None
@@ -245,11 +318,43 @@ class GestureController:
         cv2.destroyAllWindows()
         logger.info("Gesture Controller stopped")
 
+    def _next_demo_frame(self):
+        self._demo_frame_count += 1
+        frame = np.zeros((480, 640, 3), dtype=np.uint8)
+        frame[:] = (40, 30, 20)
+        for y in range(0, 480, 40):
+            cv2.line(frame, (0, y), (640, y), (55, 45, 35), 1)
+        for x in range(0, 640, 40):
+            cv2.line(frame, (x, 0), (x, 480), (55, 45, 35), 1)
+        t = self._demo_frame_count
+        cx = int(320 + 180 * math.sin(t / 30.0))
+        cy = int(240 + 100 * math.cos(t / 45.0))
+        cv2.circle(frame, (cx, cy), 28, (0, 200, 255), 2)
+        cv2.circle(frame, (cx, cy), 6, (0, 200, 255), -1)
+        cv2.putText(
+            frame, "DEMO MODE - no camera", (160, 40),
+            cv2.FONT_HERSHEY_SIMPLEX, 0.7, (0, 200, 255), 2
+        )
+        cv2.putText(
+            frame, "HUD preview only", (190, 70),
+            cv2.FONT_HERSHEY_SIMPLEX, 0.5, (180, 180, 180), 1
+        )
+        return frame
+
+    def _drain_ui_events(self):
+        for ev in self.actions.drain_ui_events():
+            if ev.get("type") == "failsafe":
+                self.feedback.add_notification(
+                    f"Fail-safe: {ev.get('action', '?')} retried", (255, 165, 0)
+                )
+
     def _init_camera(self):
         cap = cv2.VideoCapture(self.config.get("camera_id", 0))
 
         if not cap.isOpened():
-            logger.error("Cannot open camera")
+            logger.error("Cannot open camera %s", self.config.get("camera_id", 0))
+            print(f"Error: cannot open camera {self.config.get('camera_id', 0)}.")
+            print("Try --camera N, check permissions, or run with --demo.")
             sys.exit(1)
 
         cap.set(cv2.CAP_PROP_FRAME_WIDTH, 640)
@@ -321,6 +426,8 @@ class GestureController:
 
     def _execute_action(self, gesture, hand_center, frame_w, frame_h, confidence):
         if gesture == "none" or gesture == "unknown":
+            return
+        if gesture in self.disabled_gestures:
             return
 
         action_name = self._resolve_action(gesture, hand_center, frame_w, frame_h)
@@ -423,8 +530,7 @@ class GestureController:
 
 
 def list_actions():
-    with open("config.json") as f:
-        config = json.load(f)
+    config = load_config("config.json")
 
     print("\nAvailable Gestures and Actions:")
     print("=" * 60)
@@ -451,23 +557,52 @@ def list_controls():
     print()
 
 
+def build_parser():
+    parser = argparse.ArgumentParser(
+        prog="gesture_controller.py",
+        description="Gesture Controller - Tony Stark Style",
+    )
+    parser.add_argument("--list", action="store_true", help="list all gestures and actions")
+    parser.add_argument("--controls", action="store_true", help="list keyboard controls")
+    parser.add_argument(
+        "--camera",
+        type=int,
+        default=None,
+        metavar="N",
+        help="camera device id (overrides config.json)",
+    )
+    parser.add_argument(
+        "--mode",
+        choices=["normal", "presentation", "gaming"],
+        default=None,
+        help="start mode (default: normal)",
+    )
+    parser.add_argument(
+        "--demo",
+        action="store_true",
+        help="run without a camera (HUD preview only)",
+    )
+    parser.add_argument(
+        "--config",
+        default="config.json",
+        metavar="PATH",
+        help="path to config file (default: config.json)",
+    )
+    return parser
+
+
 if __name__ == "__main__":
-    if len(sys.argv) > 1:
-        if sys.argv[1] == "--list":
-            list_actions()
-        elif sys.argv[1] == "--controls":
-            list_controls()
-        elif sys.argv[1] == "--help":
-            print("\nGesture Controller - Tony Stark Style")
-            print("=" * 50)
-            print("\nUsage: python gesture_controller.py [option]")
-            print("\nOptions:")
-            print("  (no args)    - Run the gesture controller")
-            print("  --list       - List all gestures and actions")
-            print("  --controls   - List keyboard controls")
-            print("  --help       - Show this help message")
-            print()
-            list_controls()
+    args = build_parser().parse_args()
+
+    if args.list:
+        list_actions()
+    elif args.controls:
+        list_controls()
     else:
-        controller = GestureController()
+        controller = GestureController(
+            config_path=args.config,
+            camera_id=args.camera,
+            mode=args.mode,
+            demo=args.demo,
+        )
         controller.run()

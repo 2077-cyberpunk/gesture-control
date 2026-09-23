@@ -3,6 +3,7 @@
   "detection_confidence": 0.5,
   "tracking_confidence": 0.5,
   "gesture_smoothing": 2,
+  "disabled_gestures": [],
   "actions": {
     "open_palm": {
       "action": "mouse_move",
