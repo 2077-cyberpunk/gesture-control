@@ -98,9 +98,11 @@ Edit `config.json` to remap gestures, change the camera id, or adjust mode-speci
 ## Tests
 
 ```bash
-pip install pytest
+pip install -r requirements-dev.txt
 python -m pytest tests/ -q
 ```
+
+CI runs lint + tests on every push/PR (Python 3.10–3.12).
 
 ## Project layout
 
