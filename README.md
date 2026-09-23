@@ -7,6 +7,10 @@ Tony Stark–style hand gesture control for your computer. Webcam in, mouse/keyb
 
 Built with **MediaPipe**, **OpenCV**, and **PyAutoGUI**.
 
+![Gesture Controller HUD](docs/GESTURE.PNG)
+
+*Live HUD: gesture state, confidence, action log, and landmark tracking.*
+
 ## Features
 
 - **Mouse control** — move the cursor with an open palm
@@ -137,6 +141,7 @@ macros.py              # record & playback
 monitor.py             # multi-monitor detection
 tray.py                # system tray icon
 config.json            # gesture → action mapping
+docs/                  # screenshots for the README
 tests/                 # pytest suite
 ```
 
