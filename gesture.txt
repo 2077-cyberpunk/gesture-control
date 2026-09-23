@@ -1,0 +1,12 @@
+Gesture Controller — crash / debug notes
+========================================
+
+Previously contained a raw console traceback with local Windows paths.
+Personal paths removed before publishing.
+
+Known historical issue (fixed):
+- PyAutoGUI FailSafeException when the cursor was driven into a screen corner
+  during right-click. actions.py now catches fail-safe errors, retries once
+  with FAILSAFE temporarily disabled, then restores it, and logs a warning.
+
+Run `python gesture_controller.py` for current behavior; see README.md.

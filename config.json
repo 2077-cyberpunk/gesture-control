@@ -1,0 +1,154 @@
+{
+  "camera_id": 0,
+  "detection_confidence": 0.5,
+  "tracking_confidence": 0.5,
+  "gesture_smoothing": 2,
+  "actions": {
+    "open_palm": {
+      "action": "mouse_move",
+      "description": "Move mouse cursor with open palm"
+    },
+    "fist": {
+      "action": "left_click",
+      "description": "Left click with fist"
+    },
+    "pinch": {
+      "action": "right_click",
+      "description": "Right click with pinch"
+    },
+    "pointing_up": {
+      "action": "scroll_up",
+      "description": "Scroll up with index finger pointing"
+    },
+    "pointing_down": {
+      "action": "scroll_down",
+      "description": "Scroll down with index finger pointing"
+    },
+    "pointing": {
+      "action": "double_click",
+      "description": "Double click with pointing"
+    },
+    "peace": {
+      "action": "volume_up",
+      "description": "Volume up with peace sign"
+    },
+    "thumbs_up": {
+      "action": "play_pause",
+      "description": "Play/pause media"
+    },
+    "thumbs_down": {
+      "action": "volume_down",
+      "description": "Volume down"
+    },
+    "swipe_left": {
+      "action": "next_track",
+      "description": "Next track"
+    },
+    "swipe_right": {
+      "action": "prev_track",
+      "description": "Previous track"
+    },
+    "two_fingers": {
+      "action": "copy",
+      "description": "Copy (Ctrl+C)"
+    },
+    "three_fingers": {
+      "action": "paste",
+      "description": "Paste (Ctrl+V)"
+    },
+    "four_fingers": {
+      "action": "undo",
+      "description": "Undo (Ctrl+Z)"
+    },
+    "rock": {
+      "action": "screenshot",
+      "description": "Take screenshot"
+    },
+    "shaka": {
+      "action": "new_tab",
+      "description": "New browser tab"
+    },
+    "two_fist_bump": {
+      "action": "drag_start",
+      "description": "Start drag with two fists bumping"
+    },
+    "two_hand_spread": {
+      "action": "drag_end",
+      "description": "End drag with two hands spread"
+    },
+    "double_peace": {
+      "action": "select_all",
+      "description": "Select all with double peace"
+    },
+    "point_right": {
+      "action": "presentation_next",
+      "description": "Next slide in presentation"
+    },
+    "point_left": {
+      "action": "presentation_prev",
+      "description": "Previous slide in presentation"
+    },
+    "open_fist_combo": {
+      "action": "gaming_w",
+      "description": "Gaming forward"
+    },
+    "fist_open_combo": {
+      "action": "gaming_s",
+      "description": "Gaming backward"
+    },
+    "combo_grab_release": {
+      "action": "drag_end",
+      "description": "Release drag (fist then open palm)"
+    },
+    "combo_push": {
+      "action": "minimize_window",
+      "description": "Minimize window (open palm then fist)"
+    },
+    "combo_select": {
+      "action": "select_all",
+      "description": "Select all (peace then fist)"
+    },
+    "combo_deselect": {
+      "action": "escape",
+      "description": "Deselect / clear (fist then peace)"
+    },
+    "combo_approve_reject": {
+      "action": "play_pause",
+      "description": "Play/pause (thumbs up then thumbs down)"
+    },
+    "combo_point_grab": {
+      "action": "drag_start",
+      "description": "Start drag (point then open palm)"
+    },
+    "combo_shuffle": {
+      "action": "switch_app",
+      "description": "Shuffle apps (swipe left then right)"
+    },
+    "combo_zoom": {
+      "action": "zoom_in",
+      "description": "Zoom in (double pinch)"
+    }
+  },
+  "mode_actions": {
+    "presentation": {
+      "open_palm": "presentation_pointer",
+      "fist": "presentation_black",
+      "swipe_left": "presentation_prev",
+      "swipe_right": "presentation_next",
+      "point_left": "presentation_prev",
+      "point_right": "presentation_next"
+    },
+    "gaming": {
+      "open_palm": "gaming_move",
+      "fist": "gaming_space",
+      "peace": "gaming_shift",
+      "pinch": "gaming_e",
+      "thumbs_up": "gaming_r",
+      "thumbs_down": "gaming_f",
+      "two_fingers": "gaming_1",
+      "three_fingers": "gaming_2",
+      "four_fingers": "gaming_3",
+      "rock": "gaming_4"
+    }
+  }
+}

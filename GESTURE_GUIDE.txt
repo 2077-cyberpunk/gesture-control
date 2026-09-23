@@ -1,0 +1,196 @@
+============================================
+  GESTURE CONTROLLER - COMPLETE GUIDE
+============================================
+
+GESTURES AND ACTIONS
+============================================
+
+SINGLE HAND GESTURES:
+---------------------
+Open Palm (all fingers up)     -> Move Mouse Cursor
+Fist (all fingers closed)      -> Left Click
+Pinch (thumb + index together) -> Right Click
+Point Up (index up, hand high) -> Scroll Up
+Point Down (index up, hand low)-> Scroll Down
+Point (index only)             -> Double Click
+Peace (index + middle up)      -> Volume Up
+Thumbs Up (only thumb up)      -> Play/Pause Media
+Thumbs Down (thumb down)       -> Volume Down
+Two Fingers (thumb + index)    -> Copy (Ctrl+C)
+Three Fingers (thumb+index+mid)-> Paste (Ctrl+V)
+Four Fingers (all but pinky)   -> Undo (Ctrl+Z)
+Rock (index + ring up)         -> Screenshot
+Shaka (index + pinky up)       -> New Browser Tab
+
+SWIPE GESTURES:
+---------------
+Swipe Left (hand moves left)   -> Next Track
+Swipe Right (hand moves right) -> Previous Track
+
+TWO HAND GESTURES:
+------------------
+Two Fists Bump (fists together)     -> Start Drag
+Two Hands Spread (palms apart)      -> Drop/Release
+Double Peace (both hands peace)     -> Select All
+Point Right (both point right)      -> Next Slide
+Point Left (both point left)        -> Previous Slide
+Open Fist Combo (left open, right fist) -> Gaming Forward
+Fist Open Combo (left fist, right open) -> Gaming Backward
+
+GESTURE COMBOS (do within 2 seconds):
+--------------------------------------
+Fist -> Open Palm           = Grab Release
+Open Palm -> Fist           = Push
+Peace -> Fist               = Select
+Fist -> Peace               = Deselect
+Thumbs Up -> Thumbs Down    = Approve/Reject
+Pointing -> Open Palm       = Point Grab
+Swipe Left -> Swipe Right   = Shuffle
+Pinch -> Pinch              = Zoom
+
+
+MODES
+============================================
+
+NORMAL MODE (default):
+- All gestures work as listed above
+- Mouse, keyboard shortcuts, media control
+
+PRESENTATION MODE:
+- Swipe Right / Point Right -> Next Slide
+- Swipe Left / Point Left   -> Previous Slide
+- Open Palm                 -> Laser Pointer
+- Fist                      -> Black Screen
+
+GAMING MODE:
+- Open Palm (top half)      -> Move Forward (W)
+- Open Palm (bottom half)   -> Move Back (S)
+- Open Palm (left half)     -> Move Left (A)
+- Open Palm (right half)    -> Move Right (D)
+- Fist                      -> Jump (Space)
+- Peace                     -> Sprint (Shift)
+- Pinch                     -> Interact (E)
+- Thumbs Up                 -> Reload (R)
+- Thumbs Down               -> Use (F)
+- Two Fingers               -> Ability 1
+- Three Fingers             -> Ability 2
+- Four Fingers              -> Ability 3
+- Rock                      -> Ability 4
+
+
+KEYBOARD CONTROLS
+============================================
+
+q  -> Quit the program
+h  -> Toggle HUD display
+l  -> Toggle action log
+g  -> Toggle gesture guide
+p  -> Toggle performance panel
+c  -> Start calibration
+r  -> Reset calibration
+m  -> Cycle mode (Normal -> Presentation -> Gaming)
+1  -> Start macro recording
+2  -> Stop macro recording
+3  -> Play last recorded macro
+s  -> Save config
+
+
+SYSTEM TRAY
+============================================
+
+Right-click tray icon for:
+- Show Window
+- Mode selection (Normal/Presentation/Gaming)
+- Calibration (Start/Reset)
+- Macros (Record/Stop/Playback)
+- Quit
+
+
+CALIBRATION
+============================================
+
+1. Press 'c' to start
+2. Show OPEN PALM to camera (hold steady)
+3. Show FIST to camera
+4. Show PINCH to camera
+5. Show POINTING to camera
+6. Move hand around screen area
+7. Calibration saves automatically
+
+Press 'r' to reset calibration
+
+
+MACRO RECORDING
+============================================
+
+1. Press '1' to start recording
+2. Perform your gesture sequence
+3. Press '2' to stop and save
+4. Press '3' to play back
+
+Macros save to macros.json
+
+
+MULTI-MONITOR
+============================================
+
+- System auto-detects all monitors
+- Mouse maps to current monitor
+- Press 'm' to cycle through modes
+
+
+TIPS FOR BEST PERFORMANCE
+============================================
+
+1. Keep hand 1-2 feet from camera
+2. Good lighting helps detection
+3. Use calibration for better accuracy
+4. Hold gestures briefly (0.2 seconds)
+5. Keep background uncluttered
+6. Use continuous gestures (open palm)
+   for mouse movement
+
+
+TROUBLESHOOTING
+============================================
+
+Camera not working:
+- Check camera permissions
+- Try different camera ID in config.json
+- Restart the program
+
+Gestures not detected:
+- Run calibration (press 'c')
+- Improve lighting
+- Move closer to camera
+
+Mouse too slow:
+- Check frame rate in performance panel
+- Reduce camera resolution in config
+
+Actions not working:
+- Check you're in correct mode
+- Verify gesture is recognized on HUD
+
+
+FILE STRUCTURE
+============================================
+
+gesture_controller.py  - Main program
+gestures.py           - Gesture detection
+actions.py            - System actions
+feedback.py           - Visual feedback UI
+calibration.py        - Hand calibration
+macros.py             - Macro recording
+monitor.py            - Multi-monitor support
+tray.py               - System tray icon
+config.json           - Gesture configuration
+macros.json           - Saved macros
+calibration_data.json - Calibration data
+requirements.txt      - Python dependencies
+gesture_controller.log - Activity log
+
+
+============================================
+ Made by Mimo - Tony Stark Style Gesture Control
+============================================
